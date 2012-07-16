@@ -20,10 +20,11 @@ PlistArrayAdd() {
         return 1
     fi
     PlistArrayContains "$1" "$2" "$3"
-    if [[ $? > 1 ]]; then
+    local _ContainsResult=$?
+    if [[ $_ContainsResult > 1 ]]; then
         # Error other than 'not present' - pass it up
         return 1
-    elif [[ $? = 0 ]]; then
+    elif [[ $_ContainsResult = 0 ]]; then
         # Already present, no need to do the work
         return 0
     fi
