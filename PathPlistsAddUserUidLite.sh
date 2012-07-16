@@ -19,11 +19,11 @@ PlistArrayAdd() {
         echo "PlistArrayAdd: Incorrect number of arguments passed (#: $#) - Passed: $@"
         return 1
     fi
-    local _PlistContains=$(PlistArrayContains "$1" "$2" "$3")
-    if [[ $_PlistContains > 1 ]]; then
+    PlistArrayContains "$1" "$2" "$3"
+    if [[ $? > 1 ]]; then
         # Error other than 'not present' - pass it up
         return 1
-    elif [[ $_PlistContains == 0 ]]; then
+    elif [[ $? = 0 ]]; then
         # Already present, no need to do the work
         return 0
     fi
