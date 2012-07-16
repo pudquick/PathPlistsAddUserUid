@@ -6,8 +6,8 @@ PlistArrayContains() {
         echo "PlistArrayContains: Incorrect number of arguments passed (#: $#) - Passed: $@"
         return 2
     fi
-    if [[ (! -r "$1") || (! -w "$1") ]]; then
-        echo "PlistArrayContains: Plist not readable and/or writable ($1)"
+    if [[ (! -a "$1") || (! -r "$1") || (! -w "$1") ]]; then
+        echo "PlistArrayContains: Plist not present/readable/writable ($1)"
         return 3
     fi
     /usr/libexec/PlistBuddy -c "Print :$2" "$1" | /usr/bin/grep -qi "^    $3$"
@@ -30,8 +30,8 @@ PlistArrayAdd() {
     /usr/libexec/PlistBuddy -c "Add :$2:0 string \"$3\"" "$1"
 }
 
-PlistAddUserUid() {
-    # Args: 'plist path' 'shortname' 'uid'
+PlistAddShortnameUuid() {
+    # Args: 'plist path' 'shortname' 'uuid'
     if [[ $# != 3 ]]; then
         echo "PlistAddUserUid: Incorrect number of arguments passed (#: $#) - Passed: $@"
         return 1
