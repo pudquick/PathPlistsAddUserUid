@@ -1,31 +1,52 @@
 #!/bin/bash
 
+GetCaseState() {
+    if [[ $(shopt -p nocasematch) == 'shopt -u nocasematch' ]]; then
+        return 1
+    fi
+    return 0
+}
+
+SetCaseState() {
+    if [[ $1 == 0 ]]; then
+        shopt -s nocasematch
+    else
+        shopt -u nocasematch
+    fi
+}
+
 PlistArrayContains() {
     # Args: 'plist path' 'key name in plist' 'value to search for'
-    if [[ $# != 3 ]]; then
-        echo "PlistArrayContains: Incorrect number of arguments passed (#: $#) - Passed: $@"
-        return 2
-    fi
     if [[ (! -a "$1") || (! -r "$1") || (! -w "$1") ]]; then
         echo "PlistArrayContains: Plist not present/readable/writable ($1)"
+        return 2
+    fi
+    local _ArrayContents=$(/usr/libexec/PlistBuddy -c "Print :$2" "$1" 2>&1)
+    local _NoSuchKey='^Print: Entry, ".+", Does Not Exist$'
+    if [[ ${_ArrayContents} =~ ${_NoSuchKey} ]]; then
         return 3
     fi
-    /usr/libexec/PlistBuddy -c "Print :$2" "$1" | /usr/bin/grep -qi "^    $3$"
+    GetCaseState
+    local _OriginalCapsState=$?
+    local _MatchState=1
+    local _RegExMatch="^$3$"
+    for _ArrayItem in ${_ArrayContents}; do
+        if [[ ${_ArrayItem} =~ ${_RegExMatch} ]]; then
+            _MatchState=0
+        fi
+    done
+    SetCaseState ${_OriginalCapsState}
+    return ${_MatchState}
 }
 
 PlistArrayAdd() {
     # Args: 'plist path' 'key name in plist' 'value to add'
-    if [[ $# != 3 ]]; then
-        echo "PlistArrayAdd: Incorrect number of arguments passed (#: $#) - Passed: $@"
-        return 1
-    fi
     PlistArrayContains "$1" "$2" "$3"
     local _ContainsResult=$?
     if [[ $_ContainsResult > 1 ]]; then
         # Error other than 'not present' - pass it up
         return 1
     elif [[ $_ContainsResult = 0 ]]; then
-        # Already present, no need to do the work
         return 0
     fi
     /usr/libexec/PlistBuddy -c "Add :$2:0 string \"$3\"" "$1"
@@ -33,13 +54,11 @@ PlistArrayAdd() {
 
 PlistAddShortnameUuid() {
     # Args: 'plist path' 'shortname' 'uuid'
-    if [[ $# != 3 ]]; then
-        echo "PlistAddUserUid: Incorrect number of arguments passed (#: $#) - Passed: $@"
-        return 1
-    fi
     PlistArrayAdd "$1" 'users' "$2"
-    if [[ $? != 0 ]]; then
-        return $?
+    local _AddResult=$?
+    echo "Result code: $_AddResult"
+    if [[ $_AddResult != 0 ]]; then
+        return $_AddResult
     fi
-    PlistArrayAdd "$1" 'groupmembers' "$3"    
+    PlistArrayAdd "$1" 'groupmembers' "$3"
 }
