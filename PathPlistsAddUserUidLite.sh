@@ -56,7 +56,6 @@ PlistAddShortnameUuid() {
     # Args: 'plist path' 'shortname' 'uuid'
     PlistArrayAdd "$1" 'users' "$2"
     local _AddResult=$?
-    echo "Result code: $_AddResult"
     if [[ $_AddResult != 0 ]]; then
         return $_AddResult
     fi
