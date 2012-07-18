@@ -24,6 +24,7 @@ PlistArrayContains() {
     local _ArrayContents=$(/usr/libexec/PlistBuddy -c "Print :$2" "$1" 2>&1)
     local _NoSuchKey='^Print: Entry, ".+", Does Not Exist$'
     if [[ ${_ArrayContents} =~ ${_NoSuchKey} ]]; then
+        echo "PlistArrayContains: Plist present but key is missing ($2)"
         return 3
     fi
     GetCaseState
