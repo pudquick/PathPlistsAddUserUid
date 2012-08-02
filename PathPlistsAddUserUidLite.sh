@@ -2,6 +2,7 @@
 
 GetCaseState() {
     if [[ $(shopt -p nocasematch) == 'shopt -u nocasematch' ]]; then
+        shopt -s nocasematch
         return 1
     fi
     return 0
