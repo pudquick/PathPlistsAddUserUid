@@ -1,6 +1,6 @@
 #!/bin/bash
 
-GetCaseState() {
+SetCaseInsensitive() {
     if [[ $(shopt -p nocasematch) == 'shopt -u nocasematch' ]]; then
         shopt -s nocasematch
         return 1
@@ -8,7 +8,7 @@ GetCaseState() {
     return 0
 }
 
-SetCaseState() {
+RevertCaseState() {
     if [[ $1 == 0 ]]; then
         shopt -s nocasematch
     else
@@ -28,7 +28,7 @@ PlistArrayContains() {
         echo "PlistArrayContains: Plist present but key is missing ($2)"
         return 3
     fi
-    GetCaseState
+    SetCaseInsensitive
     local _OriginalCapsState=$?
     local _MatchState=1
     local _RegExMatch="^$3$"
@@ -37,7 +37,7 @@ PlistArrayContains() {
             _MatchState=0
         fi
     done
-    SetCaseState ${_OriginalCapsState}
+    RevertCaseState ${_OriginalCapsState}
     return ${_MatchState}
 }
 
